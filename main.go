@@ -1,31 +1,48 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
+
+	flag "github.com/ogier/pflag"
 )
 
+var (
+	path      string
+	byteCount bool
+)
+
+func init() {
+	flag.StringVarP(&path, "file", "f", "", "File")
+	flag.BoolVar(&byteCount, "c", false, "Return the byte count of file")
+}
+
 func main() {
-	fmt.Println("Hello World!")
 
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Print("File path: ")
-	scanner.Scan()
-
-	filepath := scanner.Text()
-
-	if scanner.Err() != nil {
-		fmt.Println("Error: ", scanner.Err())
+	flag.Parse()
+	if flag.NFlag() == 0 {
+		fmt.Printf("Usage: %s [options]\n", os.Args[0])
+		fmt.Println("Options:")
+		flag.PrintDefaults()
+		os.Exit(1)
 	}
 
-	file, err := os.Open(filepath)
+	if path == "" {
+		fmt.Println("File is not provided")
+		os.Exit(1)
+	}
+
+	file, err := os.Open(path)
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	words := CountWords(file)
-	fmt.Printf("Word count: %d", words)
+	if stat, err := os.Stat(path); err == nil && byteCount {
+		fmt.Println("Filesize", stat.Size())
+		os.Exit(1)
+	}
 
+	words := CountWords(file)
+	fmt.Printf("Number of words: %d\n", words)
 }
