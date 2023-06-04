@@ -47,12 +47,12 @@ func main() {
 	}
 
 	if wordCount {
-		words := CountWords(file)
+		words := Count("words", file)
 		fmt.Printf("Number of words: %d\n", words)
 	}
 
 	if lineCount {
-		lines := CountLines(file)
+		lines := Count("lines", file)
 		fmt.Printf("Number of lines: %d\n", lines)
 
 	}
