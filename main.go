@@ -10,11 +10,15 @@ import (
 var (
 	path      string
 	byteCount bool
+	wordCount bool
+	lineCount bool
 )
 
 func init() {
-	flag.StringVarP(&path, "file", "f", "", "File")
-	flag.BoolVar(&byteCount, "c", false, "Return the byte count of file")
+	flag.StringVarP(&path, "file", "f", "", "File path")
+	flag.BoolVarP(&byteCount, "size", "c", false, "Get the byte count")
+	flag.BoolVarP(&wordCount, "words", "w", false, "Get number of words")
+	flag.BoolVarP(&lineCount, "line", "l", false, "Get number of lines")
 }
 
 func main() {
@@ -39,10 +43,17 @@ func main() {
 	defer file.Close()
 
 	if stat, err := os.Stat(path); err == nil && byteCount {
-		fmt.Println("Filesize", stat.Size())
-		os.Exit(1)
+		fmt.Printf("Filesize: %d bytes\n", stat.Size())
 	}
 
-	words := CountWords(file)
-	fmt.Printf("Number of words: %d\n", words)
+	if wordCount {
+		words := CountWords(file)
+		fmt.Printf("Number of words: %d\n", words)
+	}
+
+	if lineCount {
+		lines := CountLines(file)
+		fmt.Printf("Number of lines: %d\n", lines)
+
+	}
 }

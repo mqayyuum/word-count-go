@@ -37,3 +37,19 @@ func CountWords(file *os.File) int {
 
 	return counter
 }
+
+func CountLines(file *os.File) int {
+	file.Seek(0, io.SeekStart)
+	scanner := bufio.NewScanner(file)
+	scanner.Split(bufio.ScanLines)
+	counter := 0
+	for scanner.Scan() {
+		counter++
+	}
+
+	if err := scanner.Err(); err != nil {
+		fmt.Println("error", err)
+	}
+
+	return counter
+}
