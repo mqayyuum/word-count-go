@@ -8,7 +8,6 @@ import (
 )
 
 var (
-	path      string
 	byteCount bool
 	wordCount bool
 	lineCount bool
@@ -16,7 +15,6 @@ var (
 )
 
 func init() {
-	flag.StringVarP(&path, "file", "f", "", "File path")
 	flag.BoolVarP(&byteCount, "size", "c", false, "Get the byte count")
 	flag.BoolVarP(&wordCount, "words", "w", false, "Get number of words")
 	flag.BoolVarP(&lineCount, "line", "l", false, "Get number of lines")
@@ -25,14 +23,19 @@ func init() {
 
 func main() {
 
+	// Get flags set
 	flag.Parse()
-	if flag.NFlag() == 0 {
-		fmt.Printf("Usage: %s [options]\n", os.Args[0])
+
+	paths := flag.CommandLine.Args()
+
+	if len(paths) == 0 {
+		fmt.Printf("Usage: %s [options] filepath\n", os.Args[0])
 		fmt.Println("Options:")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
+	path := paths[0]
 	if path == "" {
 		fmt.Println("File is not provided")
 		os.Exit(1)
