@@ -7,18 +7,18 @@ import (
 	flag "github.com/ogier/pflag"
 )
 
-var (
-	byteCount bool
-	wordCount bool
-	lineCount bool
-	charCount bool
-)
+var flags = Flags{
+	size:  false,
+	words: false,
+	lines: false,
+	chars: false,
+}
 
 func init() {
-	flag.BoolVarP(&byteCount, "size", "c", false, "Get the byte count")
-	flag.BoolVarP(&wordCount, "words", "w", false, "Get number of words")
-	flag.BoolVarP(&lineCount, "line", "l", false, "Get number of lines")
-	flag.BoolVarP(&charCount, "chars", "m", false, "Get number of chars")
+	flag.BoolVarP(&flags.size, "size", "c", false, "Get the byte count")
+	flag.BoolVarP(&flags.words, "words", "w", false, "Get number of words")
+	flag.BoolVarP(&flags.lines, "line", "l", false, "Get number of lines")
+	flag.BoolVarP(&flags.chars, "chars", "m", false, "Get number of chars")
 }
 
 func main() {
@@ -28,51 +28,41 @@ func main() {
 
 	paths := flag.CommandLine.Args()
 
-	if len(paths) == 0 {
+	buffer, _ := os.Stdin.Stat()
+
+	if len(paths) == 0 && buffer.Size() == 0 {
 		fmt.Printf("Usage: %s [options] filepath\n", os.Args[0])
 		fmt.Println("Options:")
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	path := paths[0]
-	if path == "" {
-		fmt.Println("File is not provided")
-		os.Exit(1)
+	// By default, if no flags is passed, then provide all information
+	if flags.IsNoneSet() {
+		flags.SetAllTrue()
 	}
 
-	file, err := os.Open(path)
+	// Read from buffer
+	if buffer.Size() != 0 {
+		b := Buffer{
+			buffer: os.Stdin,
+		}
+
+		Print(&flags, b)
+		os.Exit(0)
+	}
+
+	// Read from file
+	file, err := os.Open(paths[0])
 	if err != nil {
 		panic(err)
 	}
 	defer file.Close()
 
-	// By default, if no flags is passed, then provide all information
-	if !byteCount && !wordCount && !lineCount && !charCount {
-		byteCount = true
-		wordCount = true
-		lineCount = true
-		charCount = true
+	f := Buffer{
+		buffer: file,
 	}
 
-	if stat, err := os.Stat(path); err == nil && byteCount {
-		fmt.Printf("Filesize: %d bytes\n", stat.Size())
-	}
+	Print(&flags, f)
 
-	if wordCount {
-		words := Count("words", file)
-		fmt.Printf("Number of words: %d\n", words)
-	}
-
-	if lineCount {
-		lines := Count("lines", file)
-		fmt.Printf("Number of lines: %d\n", lines)
-
-	}
-
-	if charCount {
-		chars := Count("chars", file)
-		fmt.Printf("Number of chars: %d\n", chars)
-
-	}
 }
